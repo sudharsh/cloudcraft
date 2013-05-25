@@ -36,10 +36,11 @@ def __delete_keypair(conn, keyname):
     # Delete from disk as well
 
 
-def provision(cloudcraft_home, aws_access_token="", aws_access_secret="",
+def provision(cloudcraft_home, name, aws_access_token="", aws_access_secret="",
               ec2_region="us-west-2", ami="ami-bf1d8a8f",
               instance_type="m1.small", keyname=None, security_group=None):
     instance_metadata = {}
+    instance_metadata["mcs_name"] = name
     conn = __get_connection(aws_access_token, aws_access_secret,
                             ec2_region)
 

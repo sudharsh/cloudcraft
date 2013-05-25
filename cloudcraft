@@ -35,9 +35,9 @@ def execute(options, args):
     # cleaner manner
     if len(args) < 2 and args[0] != "list":
         return False
+    instance_file = None
     instance_name = "" if len(args) == 1 else args[1]
     instance = {}
-    instance_file = ""
     try:
         if instance_name:
             instance_file = os.path.join(options.cloudcraft_home, "instances", instance_name)
@@ -49,11 +49,11 @@ def execute(options, args):
         if instance:
             print "{0} already exists".format(instance_name)
             exit(-1)
-        instance = craft.aws.provision(options.cloudcraft_home,
+        instance = craft.aws.provision(options.cloudcraft_home, instance_name,
                                        **dict(conf.items("amazon")))
         if not instance:
             print "Provisioning failed!"
-        json.dump(instance, open(fp, "w"), indent=True)
+        json.dump(instance, open(instance_file, "w"), indent=True)
         print "Provisioned minecraft server"
     elif args[0] == "destroy":
         if not instance:
