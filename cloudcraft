@@ -5,8 +5,12 @@ from optparse import OptionParser
 import os
 import errno
 import json
+import fabric.context_managers as ctxt
 
 import craft
+
+from fabric.colors import green, red
+from fabric.tasks import execute
 
 
 # http://stackoverflow.com/a/600612
@@ -26,7 +30,9 @@ def initialize(cloudcraft_home):
     mkdir_p(os.path.join(cloudcraft_home, "keys"))
 
 
-def execute(options, args):
+# FIXME: Heavy refactor needed
+def despatch(options, args):
+    """Despatches commands."""
     conf = ConfigParser()
     conf.read(options.config)
     # FIXME:
@@ -78,13 +84,27 @@ def execute(options, args):
     else:
         if not instance:
             parser.error("Invalid instance")
+
         sh_args = args[1:] if len(args) >= 2 else []
         command = args[0]
         keyname = instance["keyname"]
         keyfile = os.path.join(cloudcraft_home, "keys", "{0}.pem".format(keyname))
         user = conf.get("ami_users", instance["image_id"])
-        craft.aws.remote_command(instance, keyfile, command, command_args=sh_args,
-                                 as_user=user)
+
+        with ctxt.settings(
+            host_string="%s@%s" %(user, instance["public_dns_name"]),
+            key_filename=keyfile,
+            prefix=""):
+            with ctxt.hide("running", "stdout"):
+                if command == "bootstrap":
+                    try:
+                        res = execute(craft.commander.bootstrap_server, instance["image_id"])
+                    except:
+                        import traceback
+                        print traceback.format_exc()
+
+
+
     return True
 
 
@@ -106,5 +126,5 @@ if __name__ == '__main__':
     initialize(cloudcraft_home)
 
     options.cloudcraft_home = cloudcraft_home
-    if not execute(options, args):
+    if not despatch(options, args):
         parser.print_usage()

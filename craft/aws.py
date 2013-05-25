@@ -4,14 +4,11 @@ import traceback
 
 from itertools import chain
 
-import fabric.context_managers as ctxt
 import boto.ec2 as ec2
 import boto.exception
 
 import commander
 
-from fabric.colors import green, red
-from fabric.tasks import execute
 
 def __get_connection(token, secret, region):
     conn = ec2.connect_to_region(region, aws_access_key_id=token,
@@ -109,18 +106,3 @@ def destroy(instance, aws_access_token="", aws_access_secret="",
     print "%s not found or already terminated. Are you sure if it exists?" % (machine_id)
     return False
 
-
-# FIXME: remove dependence of conf
-def remote_command(instance, keyfile, command, command_args=[], as_user="ec2-user"):
-    with ctxt.settings(
-        host_string="%s@%s" %(as_user, instance["public_dns_name"]),
-        key_filename=keyfile,
-        prefix=""):
-        with ctxt.hide("running", "stdout"):
-            if command == "bootstrap":
-                try:
-                    res = execute(commander.bootstrap_server, instance["image_id"])
-                except:
-                    import traceback
-                    print traceback.format_exc()
-    print(green("Done"))
