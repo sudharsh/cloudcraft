@@ -11,6 +11,9 @@ def execute(options, args):
     conf = ConfigParser()
     conf.read(options.config)
     instance = None
+    if len(args) == 0:
+        return False
+
     try:
         instance = json.load(open(options.instance))
     except IOError:
@@ -21,6 +24,8 @@ def execute(options, args):
             print "%(instance_file)s already exists." % { "instance_file": options.instance }
             exit(-1)
         instance = craft.aws.provision(conf)
+
+    return False
 
 
 def get_arg_parser():
@@ -37,8 +42,6 @@ if __name__ == '__main__':
     parser = get_arg_parser()
 
     (options, args) = parser.parse_args()
-    if len(args) == 0:
-        parser.print_usage()
-        exit(-1)
 
-    execute(options, args)
+    if not execute(options, args):
+        parser.print_usage()
