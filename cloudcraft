@@ -75,6 +75,16 @@ def execute(options, args):
         else:
             print "\n".join(os.listdir(os.path.join(options.cloudcraft_home,
                                                     "instances")))
+    else:
+        if not instance:
+            parser.error("Invalid instance")
+        sh_args = args[1:] if len(args) >= 2 else []
+        command = args[0]
+        keyname = instance["keyname"]
+        keyfile = os.path.join(cloudcraft_home, "keys", "{0}.pem".format(keyname))
+        user = conf.get("ami_users", instance["image_id"])
+        craft.aws.remote_command(instance, keyfile, command, command_args=sh_args,
+                                 as_user=user)
     return True
 
 
