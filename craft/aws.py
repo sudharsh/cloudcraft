@@ -66,18 +66,18 @@ def provision(cloudcraft_home, name, aws_access_token="", aws_access_secret="",
         try:
             sec_group.authorize('tcp', 25565, 25565, '0.0.0.0/0')
         except boto.exception.EC2ResponseError:
-            print traceback.format_exc()
+            print "Port 25565 already open"
 
         try:
             sec_group.authorize('tcp', 22, 22, '0.0.0.0/0')
         except boto.exception.EC2ResponseError:
-            print traceback.format_exc()
+            print "Post 22 already open"
 
     image = conn.get_image(ami)
     res = image.run(1, 1, instance_type=instance_type,
               key_name=keyname, security_groups=["default", security_group])
     machine = res.instances[0]
-    print "Provisioning instance", machine.id
+    print "Spawning instance {0}. This will take a couple of minutes...".format(instance_metadata["mcs_name"])
     while machine.update() == "pending":
         time.sleep(2)
     print "Instance state", machine.state
@@ -100,7 +100,7 @@ def destroy(instance, aws_access_token="", aws_access_secret="",
     machines = list(chain.from_iterable([i.instances for i in conn.get_all_instances()]))
     for m in machines:
         if m.id == machine_id and m.state != "terminated":
-            print "Terminating %s" % m.id
+            print "Terminating %s" % instance["mcs_name"]
             m.terminate()
             return True
     print "%s not found or already terminated. Are you sure if it exists?" % (machine_id)

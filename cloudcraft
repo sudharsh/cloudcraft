@@ -52,16 +52,16 @@ def despatch(options, args):
     except IOError:
         pass
 
-    if args[0] == "provision":
+    if args[0] == "spawn":
         if instance:
             print "{0} already exists".format(instance_name)
             exit(-1)
         instance = craft.aws.provision(options.cloudcraft_home, instance_name,
                                        **dict(conf.items("amazon")))
         if not instance:
-            print "Provisioning failed!"
+            print "Spawning failed!"
         json.dump(instance, open(instance_file, "w"), indent=True)
-        print "Provisioned minecraft server"
+        print "Instance is running."
     elif args[0] == "destroy":
         if not instance:
             print "Couldn't load instance"
