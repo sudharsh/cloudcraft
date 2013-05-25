@@ -7,6 +7,7 @@ import traceback
 
 REMOTE_PATH = "~/cloudcraft/"
 BOOTSTRAP_PATH = "bootstrap/"
+SCRIPTS_PATH = "scripts/"
 
 def bootstrap_server(ami_id):
     run("mkdir -p %s" % REMOTE_PATH)
@@ -19,3 +20,19 @@ def bootstrap_server(ami_id):
     run("sh {0}/bootstrap.sh".format(REMOTE_PATH), pty=False, combine_stderr=False)
 
 
+def run_remote(command, command_args=[], remote_vars={}):
+    try:
+        run("mkdir -p %s" % REMOTE_PATH)
+        script_file = "{0}/{1}.sh".format(SCRIPTS_PATH, command)
+        remote_path = "{0}/{1}.sh".format(REMOTE_PATH, command)
+        prepared_buffer = StringIO.StringIO()
+        for k, v in remote_vars.items():
+            prepared_buffer.write('%s="%s"\n' %(k,v))
+        with open(script_file, "r") as fh:
+            prepared_buffer.write(fh.read())
+        put(prepared_buffer, remote_path)
+    except ValueError, IOError:
+        print(traceback.format_exc())
+        return
+    with cd(REMOTE_PATH):
+        run("sh ./{0}.sh {1}".format(command, command_args), pty=False, combine_stderr=False)
