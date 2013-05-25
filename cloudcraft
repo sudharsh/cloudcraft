@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+from optparse import OptionParser
+from ConfigParser import ConfigParser
+
+import aws
+import json
+
+def get_arg_parser():
+    usage = "usage: %prog [options] <script>"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-c", "--config", dest="config", default="config",
+                      help="cloudcraft config file", metavar="FILE")
+    parser.add_option("-i", "--instance", dest="instance", default="instance.json",
+                      help="Metadata for the minecraft server instance", metavar="FILE")
+    return parser
+
+
+if __name__ == '__main__':
+    conf = ConfigParser()
+    parser = get_arg_parser()
+
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        parser.print_usage()
+        exit(-1)
+        
+    conf.read(options.config)
+    
+    
+    
+
