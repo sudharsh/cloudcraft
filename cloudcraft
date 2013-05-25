@@ -23,9 +23,9 @@ def execute(options, args):
         if instance:
             print "%(instance_file)s already exists." % { "instance_file": options.instance }
             exit(-1)
-        instance = craft.aws.provision(conf)
+        instance = craft.aws.provision(**dict(conf.items("amazon")))
 
-    return False
+    return True
 
 
 def get_arg_parser():
