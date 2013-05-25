@@ -2,30 +2,52 @@
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
+import os
+import errno
 import json
 
 import craft
+
+
+# http://stackoverflow.com/a/600612
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
+
+
+def initialize(cloudcraft_home):
+    # Error out if we find a file of the same name?
+    mkdir_p(cloudcraft_home)
+    mkdir_p(os.path.join(cloudcraft_home, "instances"))
+    mkdir_p(os.path.join(cloudcraft_home, "keys"))
+
 
 def execute(options, args):
     conf = ConfigParser()
     conf.read(options.config)
     instance = None
-    if len(args) == 0:
+    if len(args) <= 0:
         return False
-
+    instance_name = "minecraft_server" if len(args) == 1 else args[1]
+    fp = os.path.join(options.cloudcraft_home, "instances", instance_name)
     try:
-        instance = json.load(open(options.instance))
+        instance = json.load(open(fp))
     except IOError:
         instance = {}
 
     if args[0] == "provision":
         if instance:
-            print "%(instance_file)s already exists." % { "instance_file": options.instance }
+            print "{0} already exists".format(instance_name)
             exit(-1)
-        instance = craft.aws.provision(**dict(conf.items("amazon")))
+        instance = craft.aws.provision(options.cloudcraft_home,
+                                       **dict(conf.items("amazon")))
         if not instance:
             print "Provisioning failed!"
-        json.dump(instance, open(options.instance, "w"), indent=True)
+        json.dump(instance, open(fp, "w"), indent=True)
         print "Provisioned minecraft server"
     elif args[0] == "destroy":
         if not instance:
@@ -37,17 +59,15 @@ def execute(options, args):
         stat = craft.aws.destroy(instance, aws_access_token=token,
                                  aws_access_secret=secret, ec2_region=region)
         if stat:
-            print "Done. %s can now be removed" % (options.instance)
+            print "Done. %s can now be removed" % (instance_name)
     return True
 
 
 def get_arg_parser():
-    usage = "usage: %prog [options] <script>"
+    usage = "usage: %prog [options] <provision|destroy> <name>"
     parser = OptionParser(usage=usage)
     parser.add_option("-c", "--config", dest="config", default="craft.conf",
                       help="cloudcraft config file", metavar="FILE")
-    parser.add_option("-i", "--instance", dest="instance", default="instance.json",
-                      help="Metadata for the minecraft server instance", metavar="FILE")
     return parser
 
 
@@ -55,5 +75,11 @@ if __name__ == '__main__':
     parser = get_arg_parser()
     (options, args) = parser.parse_args()
 
+    cloudcraft_home = os.path.join(os.path.expanduser("~"), ".cloudcraft")
+    if os.environ.get("CLOUDCRAFT_HOME"):
+        cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
+    initialize(cloudcraft_home)
+
+    options.cloudcraft_home = cloudcraft_home
     if not execute(options, args):
         parser.print_usage()

@@ -14,22 +14,28 @@ def __get_connection(token, secret, region):
     return conn
 
 
-def __save_keypair(conn, keyname):
+def __save_keypair(conn, keyname, path):
     # FIXME: This is rather naive. Handle this a bit smartly
-    key = conn.create_key_pair(keyname)
+    key_root = os.path.join(path, "keys")
+    key_path = os.path.join(key_root, "{0}.pem".format(keyname))
+    if os.path.exists(key_path):
+        print "Keyfile already exists"
+        return key_path
     try:
-        key.save(os.getcwdu())
+        key = conn.create_key_pair(keyname)
+        key.save(key_root)
     except boto.exception.EC2ResponseError:
         print "Keypair {0} already exists for region.".format(keyname)
         return None
-    return os.path.join(os.getcwdu(), "{0}.pem".format(keyname))
+    return key_path
 
 
 def __delete_keypair(conn, keyname):
     conn.delete_key_pair(keyname)
+    # Delete from disk as well
 
-
-def provision(aws_access_token="", aws_access_secret="",
+    
+def provision(cloudcraft_home, aws_access_token="", aws_access_secret="",
               ec2_region="us-west-2", ami="ami-bf1d8a8f",
               instance_type="m1.small", keyname=None, security_group=None):
     instance_metadata = {}
@@ -39,13 +45,13 @@ def provision(aws_access_token="", aws_access_secret="",
     if not keyname:
         keyname = "cloudcraft-{0}".format(ec2_region)
         print "Creating Keypair - {0}".format(keyname)
-        keypair = __save_keypair(conn, keyname)
+        keypair = __save_keypair(conn, keyname, cloudcraft_home)
     # else: get keypair and save it to disk
 
     if not security_group:
         print "Opening up ports for minecraft server"
         security_group = "cloudcraft"
-        sec_groups = conn.get_all_security_groups(groupnames=[security_group])
+        sec_groups = [x for x in conn.get_all_security_groups() if x.name == security_group]
         if not sec_groups:
             print "Creating security group", security_group
             sec_group = conn.create_security_group(security_group, "Minecraft server security group")
@@ -73,7 +79,6 @@ def provision(aws_access_token="", aws_access_secret="",
     instance_metadata["keyname"] = keyname
     instance_metadata["security_group"] = security_group
     return instance_metadata
-
 
 
 def destroy(instance, aws_access_token="", aws_access_secret="",
