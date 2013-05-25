@@ -86,8 +86,9 @@ def despatch(options, args):
         if not instance:
             parser.error("Invalid instance")
 
-        sh_args = args[1:] if len(args) >= 2 else []
         command = args[0]
+        commands = ["bootstrap", "fetch", "start"] if command == "setup" else [command]
+        sh_args = args[1:] if len(args) >= 2 else []
         keyname = instance["keyname"]
         keyfile = os.path.join(cloudcraft_home, "keys", "{0}.pem".format(keyname))
         user = conf.get("ami_users", instance["image_id"])
@@ -96,26 +97,21 @@ def despatch(options, args):
         with ctxt.settings(
             host_string="%s@%s" %(user, instance["public_dns_name"]),
             key_filename=keyfile,
+            output_prefix=False,
             prefix=""):
-            with ctxt.hide("running"):
-                # Because this is ami specific instead of instance specific
-                if command == "bootstrap":
-                    try:
+            with ctxt.hide("running", "aborts"):
+                for cmd in commands:
+                    # Because this is ami specific instead of instance specific
+                    if cmd == "bootstrap":
                         res = execute(craft.commander.bootstrap_server, instance["image_id"])
-                    except:
-                        import traceback
-                        print traceback.format_exc()
-                elif command in ["sh", "shell"]:
-                    print(green("Logging in as '%s'" % user))
-                    subprocess.call(["ssh", "-i", keyfile, "%s@%s" % (user, instance["public_dns_name"])])
-                else:
-                    print(green("Doing '{0}' for '{1}'".format(command, instance_name)))
-                    res = execute(craft.commander.run_remote, command, command_args=sh_args,
-                                  remote_vars=remote_vars)
+                    elif cmd in ["sh", "shell"]:
+                        print(green("Logging in as '%s'" % user))
+                        subprocess.call(["ssh", "-i", keyfile, "%s@%s" % (user, instance["public_dns_name"])])
+                    else:
+                        print(green("Running '{0}' for '{1}'".format(cmd, instance_name)))
 
-
-
-
+                        res = execute(craft.commander.run_remote, cmd, command_args=sh_args,
+                                      remote_vars=remote_vars)
     return True
 
 
