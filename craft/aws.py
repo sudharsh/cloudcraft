@@ -59,8 +59,15 @@ def provision(cloudcraft_home, name, aws_access_token="", aws_access_secret="",
             sec_group = conn.create_security_group(security_group, "Minecraft server security group")
         else:
             sec_group = sec_groups[0]
+
+        # EUUGH... FIXME: Bad code
         try:
             sec_group.authorize('tcp', 25565, 25565, '0.0.0.0/0')
+        except boto.exception.EC2ResponseError:
+            print traceback.format_exc()
+
+        try:
+            sec_group.authorize('tcp', 22, 22, '0.0.0.0/0')
         except boto.exception.EC2ResponseError:
             print traceback.format_exc()
 
