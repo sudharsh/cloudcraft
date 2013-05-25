@@ -29,15 +29,21 @@ def initialize(cloudcraft_home):
 def execute(options, args):
     conf = ConfigParser()
     conf.read(options.config)
-    instance = None
-    if len(args) <= 0:
+    # FIXME:
+    # only list doesn't require the second 'arg'. Everyone else needs the
+    # instance name as one of the args. Maybe this can be done in a much
+    # cleaner manner
+    if len(args) < 2 and args[0] != "list":
         return False
-    instance_name = "minecraft_server" if len(args) == 1 else args[1]
-    fp = os.path.join(options.cloudcraft_home, "instances", instance_name)
+    instance_name = "" if len(args) == 1 else args[1]
+    instance = {}
+    instance_file = ""
     try:
-        instance = json.load(open(fp))
+        if instance_name:
+            instance_file = os.path.join(options.cloudcraft_home, "instances", instance_name)
+            instance = json.load(open(instance_file))
     except IOError:
-        instance = {}
+        pass
 
     if args[0] == "provision":
         if instance:
