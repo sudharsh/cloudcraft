@@ -34,8 +34,10 @@ def execute(options, args):
         token = conf.get("amazon", "AWS_ACCESS_TOKEN")
         secret = conf.get("amazon", "AWS_ACCESS_SECRET")
         region = conf.get("amazon", "EC2_REGION")
-        craft.aws.destroy(instance, aws_access_token=token,
-                          aws_access_secret=secret, ec2_region=region)
+        stat = craft.aws.destroy(instance, aws_access_token=token,
+                                 aws_access_secret=secret, ec2_region=region)
+        if stat:
+            print "Done. %s can now be removed" % (options.instance)
     return True
 
 

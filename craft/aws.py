@@ -2,8 +2,11 @@ import time
 import os
 import traceback
 
+from itertools import chain
+
 import boto.ec2 as ec2
 import boto.exception
+
 
 def __get_connection(token, secret, region):
     conn = ec2.connect_to_region(region, aws_access_key_id=token,
@@ -77,4 +80,12 @@ def destroy(instance, aws_access_token="", aws_access_secret="",
             ec2_region="us-west-2"):
     conn = __get_connection(aws_access_token, aws_access_secret,
                             ec2_region)
-    __delete_keypair(conn)
+    machine_id = instance["id"]
+    machines = list(chain.from_iterable([i.instances for i in conn.get_all_instances()]))
+    for m in machines:
+        if m.id == machine_id and m.state != "terminated":
+            print "Terminating %s" % m.id
+            m.terminate()
+            return True
+    print "%s not found or already terminated. Are you sure if it exists?" % (machine_id)
+    return False
