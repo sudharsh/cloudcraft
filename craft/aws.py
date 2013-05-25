@@ -26,6 +26,7 @@ def __save_keypair(conn, keyname, path):
         key.save(key_root)
     except boto.exception.EC2ResponseError:
         print "Keypair {0} already exists for region.".format(keyname)
+        # Get this keypair and save to disk if it doesn't exist
         return None
     return key_path
 
@@ -34,7 +35,7 @@ def __delete_keypair(conn, keyname):
     conn.delete_key_pair(keyname)
     # Delete from disk as well
 
-    
+
 def provision(cloudcraft_home, aws_access_token="", aws_access_secret="",
               ec2_region="us-west-2", ami="ami-bf1d8a8f",
               instance_type="m1.small", keyname=None, security_group=None):

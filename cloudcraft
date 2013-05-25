@@ -60,6 +60,15 @@ def execute(options, args):
                                  aws_access_secret=secret, ec2_region=region)
         if stat:
             print "Done. %s can now be removed" % (instance_name)
+    elif args[0] == "list":
+        if instance_name and not instance:
+            print "Couldn't load instance"
+            exit(-1)
+        elif instance and len(args) >= 2: # Not my proudest piece of code
+            print "\n".join(["{0}: {1}".format(k,v) for k,v in instance.items()])
+        else:
+            print "\n".join(os.listdir(os.path.join(options.cloudcraft_home,
+                                                    "instances")))
     return True
 
 
