@@ -1,6 +1,7 @@
 from fabric.api import local, run, cd, put
 from fabric.colors import green, red
 
+import logging
 import os
 import StringIO
 import traceback
@@ -17,7 +18,7 @@ def bootstrap_server(ami_id):
     try:
         put(BOOTSTRAP_PATH + ami_id + ".sh", REMOTE_PATH + "bootstrap.sh")
     except ValueError:
-        print(red("Couldn't find bootstrap script for AMI:%s" % ami_d))
+        logging.error(red("Couldn't find bootstrap script for AMI:%s" % ami_d))
     run("sh {0}/bootstrap.sh".format(REMOTE_PATH), pty=False, combine_stderr=False)
     print(green("------"))
 
@@ -41,8 +42,8 @@ def run_remote(command, command_args=[], remote_vars={}):
 
     except ValueError, IOError:
         print(traceback.format_exc())
-        print(red("Is the machine up?"))
+        logging.error(red("Couldn't connect to the instance"))
         return
     except:
-        print(red("Error when executing command {0}".format(command)))
+        logging.error(red("Error when executing command {0}".format(command)))
         return

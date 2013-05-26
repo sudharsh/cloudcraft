@@ -2,6 +2,7 @@
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
+import logging
 import subprocess
 import os
 import errno
@@ -54,17 +55,17 @@ def despatch(options, args):
 
     if args[0] == "spawn":
         if instance:
-            print "{0} already exists".format(instance_name)
+            logging.error("{0} already exists".format(instance_name))
             exit(-1)
         instance = craft.aws.provision(options.cloudcraft_home, instance_name,
                                        **dict(conf.items("amazon")))
         if not instance:
-            print "Spawning failed!"
+            logging.error("Spawning failed!")
         json.dump(instance, open(instance_file, "w"), indent=True)
-        print "Instance is running."
+        logging.info("Instance {0} is up and running. Run 'setup' to install minecraft server".format(instance_name))
     elif args[0] == "destroy":
         if not instance:
-            print "Couldn't load instance"
+            logging.error("Instance {0} doesn't exist".format(instance_name))
             exit(-1)
         token = conf.get("amazon", "AWS_ACCESS_TOKEN")
         secret = conf.get("amazon", "AWS_ACCESS_SECRET")
@@ -72,11 +73,11 @@ def despatch(options, args):
         stat = craft.aws.destroy(instance, aws_access_token=token,
                                  aws_access_secret=secret, ec2_region=region)
         if stat:
-            print "Deleting instance metadata"
+            logging.debug("Deleting instance metadata")
             os.remove(instance_file)
     elif args[0] == "list":
         if instance_name and not instance:
-            parser.error("Invalid instance")
+            parser.error("Instance {0} doesn't exist".format(instance_name))
         elif instance: # Not my proudest piece of code
             print "\n".join(["{0}: {1}".format(k,v) for k,v in instance.items()])
         else:
@@ -120,18 +121,31 @@ def get_arg_parser():
     parser = OptionParser(usage=usage)
     parser.add_option("-c", "--config", dest="config", default="craft.conf",
                       help="cloudcraft config file", metavar="FILE")
+    parser.add_option("-l", "--log", dest="log", default="INFO",
+                      help="Log level. Use DEBUG for verbose output")
+
     return parser
+
+
+def get_logger(level):
+    lvl = getattr(logging, level.upper(), logging.INFO)
+    if not isinstance(lvl, int):
+        raise ValueError('Invalid log level: %s' % level)
+    return logging.basicConfig(level=lvl, format="%(levelname)s: %(message)s")
 
 
 if __name__ == '__main__':
     parser = get_arg_parser()
     (options, args) = parser.parse_args()
 
+    get_logger(options.log)
+    
     cloudcraft_home = os.path.join(os.path.expanduser("~"), ".cloudcraft")
     if os.environ.get("CLOUDCRAFT_HOME"):
         cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
+    logging.debug("Setting CLOUDCRAFT_HOME to {0}".format(cloudcraft_home))
     initialize(cloudcraft_home)
-
+        
     options.cloudcraft_home = cloudcraft_home
     if not despatch(options, args):
         parser.print_usage()
