@@ -118,7 +118,7 @@ def despatch(options, args):
 
 
 def get_arg_parser():
-    usage = "usage: %prog [options] <provision|destroy> <name>"
+    usage = "usage: %prog [options] [spawn|destroy|setup server_name] [list [server_name]]"
     parser = OptionParser(usage=usage)
     parser.add_option("-c", "--config", dest="config", default="craft.conf",
                       help="cloudcraft config file", metavar="FILE")
