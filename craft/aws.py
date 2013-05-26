@@ -23,16 +23,17 @@ def __save_keypair(conn, keyname, path):
     # FIXME: This is rather naive. Handle this a bit smartly
     key_root = os.path.join(path, "keys")
     key_path = os.path.join(key_root, "{0}.pem".format(keyname))
-    if os.path.exists(key_path):
-        log.debug("Keyfile already exists")
-        return key_path
     try:
         key = conn.create_key_pair(keyname)
         key.save(key_root)
-    except boto.exception.EC2ResponseError:
-        log.error("Keypair {0} already exists for region.".format(keyname))
-        # Get this keypair and save to disk if it doesn't exist
-        return None
+    except:
+        if not os.path.exists(key_path):
+            log.error("AWS Key {0}.pem already generated but couldn't find it in {1}".format(keyname, key_root))
+            log.error("This usually means that the keyfile was deleted locally.")
+            log.error("Generate the keypair manually and place {0}.pem in {1}".format(keyname, key_root))
+            return None
+        else:
+            log.debug("Found {0}.pem.".format(keyname))
     return key_path
 
 
