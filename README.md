@@ -14,14 +14,14 @@ Quickstart
 
 `spawn` spins up instances, creates keypairs and authorizes security groups for minecraft automatically.
 
-    $ ./cloudcraft spawn my_server
+    $ ./cloudcraft spawn myserver
     INFO: Spawning instance foobar. This will take a couple of minutes...
     INFO: Instance foobar is up and running. Run 'setup' to install minecraft
 
 
 `setup` fetches the latest minecraft_server.jar and starts the server.
 
-    $ ./cloudcraft setup my_server
+    $ ./cloudcraft setup myserver
     ...
     ...
     Starting minecraft server
@@ -37,16 +37,16 @@ More commands
 
 ### Listing instances
     $ ./cloudcraft list
-    my_server
+    myserver
 
 
 ### Get details about an instance
-    `$ ./cloudcraft list my_server`
+    $ ./cloudcraft list myserver
 
 
 ### Stop the minecraft server
-    $ ./cloudcraft stop my_server
-    Running 'stop' for 'mc'
+    $ ./cloudcraft stop myserver
+    Running 'stop' for 'myserver'
     -------
     Warning miners...
     Saving map...
@@ -54,22 +54,22 @@ More commands
 
 
 ### Starting minecraft server
-    $ ./cloudcraft start my_server
-    Running 'start' for 'mc'
+    $ ./cloudcraft start myserver
+    Running 'start' for 'myserver'
     -------
     Starting minecraft server
     Started minecraft server successfully! Connect to '50.112.23.3' for Multiplayer
     Happy mining!
 
 ### Saving the map
-    $ ./cloudcraft save my_server
-    Running 'save' for 'mc'
+    $ ./cloudcraft save myserver
+    Running 'save' for 'myserver'
     -------
     Saving map...
 
 
 ### Get logs
-    $ ./cloudcraft logs my_server
+    $ ./cloudcraft logs myserver
     ...
     ...
     2013-05-26 18:24:01 [INFO] Saving worlds
@@ -86,11 +86,11 @@ More commands
 
 
 ### Login to the instance
-    $ ./cloudcraft sh my_server
+    $ ./cloudcraft sh myserver
 
 
 ### Destroy the EC2 instance
-    $ ./cloudcraft destroy my_server
+    $ ./cloudcraft destroy myserver
 
 
 
@@ -100,7 +100,7 @@ TODO
 - Implement EC2 scaling to save costs
 - `setup.py` script for proper distribution
 - plugin management
-- Manage multiple instance of minecraft_server.jar
+- Manage multiple instances of minecraft_server.jar
 - More documentation
 - Keep track of instance shutdowns. If an instance is shutdown
 - Test cases
