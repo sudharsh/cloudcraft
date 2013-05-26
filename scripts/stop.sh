@@ -1,12 +1,13 @@
+source ./lib.sh
 if pgrep -f "minecraft_server" > /dev/null
 then
     echo "Warning miners..."
-    screen -p 0 -S minecraft -X eval 'stuff "say WARNING: Server shutting down in 10 seconds"\015'
+    mc_command say "WARNING: shutting down in 10 seconds"
     echo "Saving map..."
-    screen -p 0 -S minecraft -X eval 'stuff "save-all"\015'
+    mc_command save-all
     sleep 10
     echo "Stopping server..."
-    screen -p 0 -S minecraft -X eval 'stuff "stop"\015'
+    mc_command stop
 else
     echo "Server already stopped"
 fi
