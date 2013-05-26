@@ -11,6 +11,7 @@ import boto.exception
 import commander
 
 log = logging.getLogger("cloudcraft")
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 def __get_connection(token, secret, region):
     conn = ec2.connect_to_region(region, aws_access_key_id=token,
