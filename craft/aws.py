@@ -53,7 +53,8 @@ def provision(cloudcraft_home, name, aws_access_token="", aws_access_secret="",
         keyname = "cloudcraft-{0}".format(ec2_region)
         log.debug("Creating Keypair - {0}".format(keyname))
         keypair = __save_keypair(conn, keyname, cloudcraft_home)
-    # else: get keypair and save it to disk
+        if not keypair:
+            return {}
 
     if not security_group:
         log.debug("Authorizing security group for minecraft")
