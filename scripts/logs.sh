@@ -1,1 +1,1 @@
-tail -n 30 nohup.out
+tail -n 50 server.log
