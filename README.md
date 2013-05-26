@@ -102,7 +102,7 @@ TODO
 - plugin management
 - Manage multiple instances of minecraft_server.jar
 - More documentation
-- Keep track of instance shutdowns. If an instance is shutdown
+- Keep track of instance shutdowns. If an instance is shutdown we lose the IP.
 - Test cases
 
 
