@@ -10,6 +10,8 @@ REMOTE_PATH = "~/cloudcraft/"
 BOOTSTRAP_PATH = "bootstrap/"
 SCRIPTS_PATH = "scripts/"
 
+log = logging.getLogger("cloudcraft")
+
 def bootstrap_server(ami_id):
     run("mkdir -p %s" % REMOTE_PATH)
     cd(REMOTE_PATH)
@@ -18,7 +20,7 @@ def bootstrap_server(ami_id):
     try:
         put(BOOTSTRAP_PATH + ami_id + ".sh", REMOTE_PATH + "bootstrap.sh")
     except ValueError:
-        logging.error(red("Couldn't find bootstrap script for AMI:%s" % ami_d))
+        log.error(red("Couldn't find bootstrap script for AMI:%s" % ami_d))
     run("sh {0}/bootstrap.sh".format(REMOTE_PATH), pty=False, combine_stderr=False)
     print(green("------"))
 
@@ -42,8 +44,8 @@ def run_remote(command, command_args=[], remote_vars={}):
 
     except ValueError, IOError:
         print(traceback.format_exc())
-        logging.error(red("Couldn't connect to the instance"))
+        log.error(red("Couldn't connect to the instance"))
         return
     except:
-        logging.error(red("Error when executing command {0}".format(command)))
+        log.error(red("Error when executing command {0}".format(command)))
         return

@@ -10,6 +10,7 @@ import boto.exception
 
 import commander
 
+log = logging.getLogger("cloudcraft")
 
 def __get_connection(token, secret, region):
     conn = ec2.connect_to_region(region, aws_access_key_id=token,
@@ -22,13 +23,13 @@ def __save_keypair(conn, keyname, path):
     key_root = os.path.join(path, "keys")
     key_path = os.path.join(key_root, "{0}.pem".format(keyname))
     if os.path.exists(key_path):
-        logging.debug("Keyfile already exists")
+        log.debug("Keyfile already exists")
         return key_path
     try:
         key = conn.create_key_pair(keyname)
         key.save(key_root)
     except boto.exception.EC2ResponseError:
-        logging.error("Keypair {0} already exists for region.".format(keyname))
+        log.error("Keypair {0} already exists for region.".format(keyname))
         # Get this keypair and save to disk if it doesn't exist
         return None
     return key_path
@@ -49,41 +50,38 @@ def provision(cloudcraft_home, name, aws_access_token="", aws_access_secret="",
 
     if not keyname:
         keyname = "cloudcraft-{0}".format(ec2_region)
-        print "Creating Keypair - {0}".format(keyname)
+        log.debug("Creating Keypair - {0}".format(keyname))
         keypair = __save_keypair(conn, keyname, cloudcraft_home)
     # else: get keypair and save it to disk
 
     if not security_group:
-        logging.debug("Authorizing security group for minecraft")
+        log.debug("Authorizing security group for minecraft")
         security_group = "cloudcraft"
         sec_groups = [x for x in conn.get_all_security_groups() if x.name == security_group]
         if not sec_groups:
-            logging.debug("Creating security group %s", security_group)
+            log.debug("Creating security group %s", security_group)
             sec_group = conn.create_security_group(security_group, "Minecraft server security group")
         else:
             sec_group = sec_groups[0]
-
-        # EUUGH... FIXME: Bad code
-        try:
-            sec_group.authorize('tcp', 25565, 25565, '0.0.0.0/0')
-        except boto.exception.EC2ResponseError:
-            logging.debug("Port 25565 already open")
-
-        try:
-            sec_group.authorize('tcp', 22, 22, '0.0.0.0/0')
-        except boto.exception.EC2ResponseError:
-            logging.debug("Post 22 already open")
-
+        ports = [25565, 22] # minecraft and ssh
+        existing_rules = [int(x.from_port) for x in sec_group.rules]
+        for p in ports:
+            if p in existing_rules:
+                log.debug("Port %s already open", p)
+            else:
+                log.debug("Opening up port %s", p)
+                sec_group.authorize('tcp', p, p, '0.0.0.0/0')
+    
     image = conn.get_image(ami)
     res = image.run(1, 1, instance_type=instance_type,
               key_name=keyname, security_groups=["default", security_group])
     machine = res.instances[0]
-    logging.info("Spawning instance {0}. This will take a couple of minutes...".format(instance_metadata["mcs_name"]))
+    log.info("Spawning instance {0}. This will take a couple of minutes...".format(instance_metadata["mcs_name"]))
     while machine.update() == "pending":
         time.sleep(2)
-    logging.debug("Instance state", machine.state)
+    log.debug("Instance state %s", machine.state)
     if machine.state != "running":
-        logging.error("Couldn't start instance {0}. Please destroy the stale instance by logging in to your AWS console. This will be fixed in the future".format(machine.id))
+        log.error("Couldn't start instance {0}. Please destroy the stale instance by logging in to your AWS console. This will be fixed in the future".format(machine.id))
         return {}
 
     for k in ["id", "private_ip_address", "image_id", "public_dns_name"]:
@@ -101,9 +99,9 @@ def destroy(instance, aws_access_token="", aws_access_secret="",
     machines = list(chain.from_iterable([i.instances for i in conn.get_all_instances()]))
     for m in machines:
         if m.id == machine_id and m.state != "terminated":
-            logging.info("Terminating %s" % instance["mcs_name"])
+            log.info("Terminating %s" % instance["mcs_name"])
             m.terminate()
             return True
-    logging.error("%s not found or already terminated. Are you sure if it exists?" % (machine_id))
+    log.error("%s not found or already terminated. Are you sure if it exists?" % (machine_id))
     return False
 

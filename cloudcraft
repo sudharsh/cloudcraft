@@ -14,6 +14,7 @@ import craft
 from fabric.colors import green, red
 from fabric.tasks import execute
 
+log = logging.getLogger("cloudcraft")
 
 # http://stackoverflow.com/a/600612
 def mkdir_p(path):
@@ -55,17 +56,17 @@ def despatch(options, args):
 
     if args[0] == "spawn":
         if instance:
-            logging.error("{0} already exists".format(instance_name))
+            log.error("{0} already exists".format(instance_name))
             exit(-1)
         instance = craft.aws.provision(options.cloudcraft_home, instance_name,
                                        **dict(conf.items("amazon")))
         if not instance:
-            logging.error("Spawning failed!")
+            log.error("Spawning failed!")
         json.dump(instance, open(instance_file, "w"), indent=True)
-        logging.info("Instance {0} is up and running. Run 'setup' to install minecraft server".format(instance_name))
+        log.info("Instance {0} is up and running. Run 'setup' to install minecraft server".format(instance_name))
     elif args[0] == "destroy":
         if not instance:
-            logging.error("Instance {0} doesn't exist".format(instance_name))
+            log.error("Instance {0} doesn't exist".format(instance_name))
             exit(-1)
         token = conf.get("amazon", "AWS_ACCESS_TOKEN")
         secret = conf.get("amazon", "AWS_ACCESS_SECRET")
@@ -73,7 +74,7 @@ def despatch(options, args):
         stat = craft.aws.destroy(instance, aws_access_token=token,
                                  aws_access_secret=secret, ec2_region=region)
         if stat:
-            logging.debug("Deleting instance metadata")
+            log.debug("Deleting instance metadata")
             os.remove(instance_file)
     elif args[0] == "list":
         if instance_name and not instance:
@@ -131,7 +132,9 @@ def get_logger(level):
     lvl = getattr(logging, level.upper(), logging.INFO)
     if not isinstance(lvl, int):
         raise ValueError('Invalid log level: %s' % level)
-    return logging.basicConfig(level=lvl, format="%(levelname)s: %(message)s")
+    logging.basicConfig(format="%(levelname)s: %(message)s")
+    log.setLevel(lvl)
+    return log
 
 
 if __name__ == '__main__':
@@ -143,7 +146,7 @@ if __name__ == '__main__':
     cloudcraft_home = os.path.join(os.path.expanduser("~"), ".cloudcraft")
     if os.environ.get("CLOUDCRAFT_HOME"):
         cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
-    logging.debug("Setting CLOUDCRAFT_HOME to {0}".format(cloudcraft_home))
+    log.debug("Setting CLOUDCRAFT_HOME to {0}".format(cloudcraft_home))
     initialize(cloudcraft_home)
         
     options.cloudcraft_home = cloudcraft_home
