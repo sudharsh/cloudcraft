@@ -19,9 +19,10 @@ def bootstrap_server(ami_id):
     print(green("------"))
     try:
         put(BOOTSTRAP_PATH + ami_id + ".sh", REMOTE_PATH + "bootstrap.sh")
+        put(SCRIPTS_PATH + "lib.sh", REMOTE_PATH + "lib.sh")
     except ValueError:
         log.error(red("Couldn't find bootstrap script for AMI:%s" % ami_d))
-    run("sh {0}/bootstrap.sh".format(REMOTE_PATH), pty=False, combine_stderr=False)
+    run("bash {0}/bootstrap.sh".format(REMOTE_PATH), pty=False, combine_stderr=False)
     print(green("------"))
 
 
@@ -39,7 +40,7 @@ def run_remote(command, command_args=[], remote_vars={}):
             prepared_buffer.write(fh.read())
         put(prepared_buffer, remote_path)
         with cd(REMOTE_PATH):
-            return run("sh ./{0}.sh {1}".format(command, command_args), pty=False, combine_stderr=False)
+            return run("bash ./{0}.sh {1}".format(command, command_args), pty=False, combine_stderr=False)
         print(green("-------"))
 
     except ValueError, IOError:
