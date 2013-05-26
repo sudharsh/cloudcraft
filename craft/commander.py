@@ -6,7 +6,7 @@ import os
 import StringIO
 import traceback
 
-REMOTE_PATH = "~/cloudcraft/"
+REMOTE_PATH = "~/.cloudcraft/"
 BOOTSTRAP_PATH = "bootstrap/"
 SCRIPTS_PATH = "scripts/"
 

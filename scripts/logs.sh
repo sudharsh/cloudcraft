@@ -1,1 +1,1 @@
-tail -n 50 server.log
+tail -n 50 ${mc_home}/server.log
