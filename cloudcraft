@@ -28,19 +28,20 @@ def mkdir_p(path):
 
 def initialize(cloudcraft_home, config):
     # Error out if we find a file of the same name?
+    mkdir_p(cloudcraft_home)
+    mkdir_p(os.path.join(cloudcraft_home, "instances"))
+    mkdir_p(os.path.join(cloudcraft_home, "keys"))
     config_template = "etc/config.template"
     if not os.path.exists(config):
-        print "{0} not found. Initalizing cloudcraft configuration at {0}".format(config)
+        print "{0} not found.".format(config)
+        print "Initalizing cloudcraft configuration at {0}".format(config)
         token = raw_input("AWS access key: ")
         secret = raw_input("AWS access secret: ")
         f = open(config_template).read()
         with open(config, "w") as c:
             c.write(f.format(token=token, secret=secret))
-        print "Wrote config {0}."
-
-    mkdir_p(cloudcraft_home)
-    mkdir_p(os.path.join(cloudcraft_home, "instances"))
-    mkdir_p(os.path.join(cloudcraft_home, "keys"))
+        print "Wrote config {0}. Run the same command once again to continue.".format(config)
+        exit(0)
 
 
 # FIXME: Heavy refactor needed
