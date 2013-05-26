@@ -1,0 +1,17 @@
+[minecraft]
+JAR=https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft_server.jar
+ms=512m
+mx=1G
+mc_home=/home/ubuntu/minecraft
+
+[amazon]
+AWS_ACCESS_TOKEN={token}
+AWS_ACCESS_SECRET={secret}
+
+# Amazon AMIs
+EC2_REGION=us-west-2
+AMI=ami-bf1d8a8f
+INSTANCE_TYPE=t1.micro
+
+[ami_users]
+ami-bf1d8a8f=ubuntu

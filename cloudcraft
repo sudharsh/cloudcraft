@@ -26,8 +26,18 @@ def mkdir_p(path):
         else: raise
 
 
-def initialize(cloudcraft_home):
+def initialize(cloudcraft_home, config):
     # Error out if we find a file of the same name?
+    config_template = "etc/config.template"
+    if not os.path.exists(config):
+        print "{0} not found. Initalizing cloudcraft configuration at {0}".format(config)
+        token = raw_input("AWS access key: ")
+        secret = raw_input("AWS access secret: ")
+        f = open(config_template).read()
+        with open(config, "w") as c:
+            c.write(f.format(token=token, secret=secret))
+        print "Wrote config {0}."
+
     mkdir_p(cloudcraft_home)
     mkdir_p(os.path.join(cloudcraft_home, "instances"))
     mkdir_p(os.path.join(cloudcraft_home, "keys"))
@@ -124,6 +134,9 @@ def get_arg_parser():
                       help="cloudcraft config file", metavar="FILE")
     parser.add_option("-l", "--log", dest="log", default="INFO",
                       help="Log level. Use DEBUG for verbose output")
+    parser.add_option("-n", "--no-init", dest="init", default=True,
+                      help="Skip initialization of cloudcraft config")
+
 
     return parser
 
@@ -142,13 +155,13 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     get_logger(options.log)
-    
+
     cloudcraft_home = os.path.join(os.path.expanduser("~"), ".cloudcraft")
     if os.environ.get("CLOUDCRAFT_HOME"):
         cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
     log.debug("Setting CLOUDCRAFT_HOME to {0}".format(cloudcraft_home))
-    initialize(cloudcraft_home)
-        
+    initialize(cloudcraft_home, options.config)
+
     options.cloudcraft_home = cloudcraft_home
     if not despatch(options, args):
         parser.print_usage()
