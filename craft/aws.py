@@ -99,7 +99,7 @@ def destroy(instance, aws_access_token="", aws_access_secret="",
     conn = __get_connection(aws_access_token, aws_access_secret,
                             ec2_region)
     machine_id = instance["id"]
-    machines = list(chain.from_iterable([i.instances for i in conn.get_all_instances()]))
+    machines = list(chain.from_iterable([i.instances for i in conn.get_all_instances(instance_ids=[machine_id])]))
     for m in machines:
         if m.id == machine_id and m.state != "terminated":
             log.info("Terminating %s" % instance["mcs_name"])
