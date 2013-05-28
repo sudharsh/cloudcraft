@@ -24,7 +24,7 @@ class AWS(object):
                                           aws_secret_access_key=secret)
 
 
-    def __get_instance(self, instance_id):
+    def get_instance(self, instance_id):
         reservations = self.conn.get_all_instances(instance_ids=[instance_id])
         machines = list(chain.from_iterable([i.instances for i in reservations]))
         for m in machines:
@@ -74,44 +74,42 @@ class AWS(object):
               key_name="cloudcraft", security_group="cloudcraft",
               user="root"):
         image = self.conn.get_image(ami)
-#        res = image.run(1, 1, instance_type=instance_type,
-#                        key_name=key_name, security_groups=["default", security_group])
-#        machine = res.instances[0]
+        res = image.run(1, 1, instance_type=instance_type,
+                       key_name=key_name, security_groups=["default", security_group])
+        machine = res.instances[0]
         log.info("Spawning '{0}'. This will take a couple of minutes...".format(name))
-#        while machine.update() == "pending":
-#            time.sleep(2)
-#        log.debug("Instance state changed from 'pending' to {0}".format(machine.state))
-#        if machine.state != 'running':
-#            log.error("Couldn't start instance {0}. Please destroy the stale instance by logging in to your AWS console. This will be fixed in the future".format(machine.id))
-#            return None
+        while machine.update() == "pending":
+            time.sleep(2)
+        log.debug("Instance state changed from 'pending' to {0}".format(machine.state))
+        if machine.state != 'running':
+            log.error("Couldn't start instance {0}. Please destroy the stale instance by logging in to your AWS console. This will be fixed in the future".format(machine.id))
+            return None
         
-        #mcserver = mcserver.MinecraftServer(machine.id, name)
-        machine = self.__get_instance("i-dec75deb")
         mcs = mcserver.MinecraftServer(machine.id, name,
                                        user, machine.public_dns_name)
         return mcs
 
 
     def destroy(self, mcserver):
-        m = self.__get_instance(mcserver.server_id)
+        m = self.get_instance(mcserver.server_id)
         log.debug("Terminating instance %s", m.id)
         return m.terminate()
 
 
     def shutdown(self, mcserver):
-        m = self.__get_instance(mcserver.server_id)
+        m = self.get_instance(mcserver.server_id)
         log.debug("Stopping instance %s", m.id)
         return m.stop()
 
 
     def boot(self, mcserver):
-        m = self.__get_instance(mcserver.server_id)
+        m = self.get_instance(mcserver.server_id)
         log.debug("Booting up instance %s", m.id)
         return m.start()
 
 
     def reboot(self, mcserver):
-        m = self.__get_instance(mcserver.server_id)
+        m = self.get_instance(mcserver.server_id)
         log.debug("Rebooting instance %s", m.id)
         return m.reboot()
 
