@@ -92,25 +92,25 @@ class AWS(object):
 
     def destroy(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.debug("Terminating instance %s", m.id)
+        log.info("Terminating instance %s", m.id)
         return m.terminate()
 
 
     def shutdown(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.debug("Stopping instance %s", m.id)
+        log.info("Stopping instance %s", m.id)
         return m.stop()
 
 
     def boot(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.debug("Booting up instance %s", m.id)
+        log.info("Booting up instance %s", m.id)
         return m.start()
 
 
     def reboot(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.debug("Rebooting instance %s", m.id)
+        log.info("Rebooting instance %s", m.id)
         return m.reboot()
 
 
