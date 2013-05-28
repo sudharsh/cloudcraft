@@ -73,7 +73,7 @@ def despatch(options, args):
     secret = conf.get("amazon", "AWS_ACCESS_SECRET")
     region = conf.get("amazon", "EC2_REGION")
     instance_type = conf.get("amazon", "INSTANCE_TYPE")
-    security_group = conf.get("amazon", "SECURITY_GROUP", "cloudcraft")
+    security_group = conf.get("amazon", "SECURITY_GROUP")
     ami = conf.get("amazon", "AMI")
     user = "ubuntu"
 
