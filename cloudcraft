@@ -100,7 +100,7 @@ def despatch(options, args):
             else:
                 log.error("Couldn't spawn instance {0}".format(mcs.name))
                 exit(-1)
-    elif command in ["destroy", "reboot", "boot", "shutdown"]:
+    elif command in ["destroy", "reboot", "boot", "shutdown", "info"]:
         if not mcs:
             log.error("Instance {0} doesn't exist".format(mcserver_name))
             exit(-1)

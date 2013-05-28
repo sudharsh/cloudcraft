@@ -68,7 +68,7 @@ class AWS(object):
             else:
                 log.debug("Opening up port %s", p)
                 sec_group.authorize('tcp', p, p, '0.0.0.0/0')
-        
+
 
     def spawn(self, name, ami=None, instance_type="t1.micro",
               key_name="cloudcraft", security_group="cloudcraft",
@@ -84,7 +84,7 @@ class AWS(object):
         if machine.state != 'running':
             log.error("Couldn't start instance {0}. Please destroy the stale instance by logging in to your AWS console. This will be fixed in the future".format(machine.id))
             return None
-        
+
         mcs = mcserver.MinecraftServer(machine.id, name,
                                        user, machine.public_dns_name)
         return mcs
@@ -112,3 +112,15 @@ class AWS(object):
         m = self.get_instance(mcserver.server_id)
         log.debug("Rebooting instance %s", m.id)
         return m.reboot()
+
+
+    def info(self, mcserver):
+        m = self.get_instance(mcserver.server_id)
+        print "----- Machine Status for {0} -----".format(mcserver.name)
+        data = {}
+        for k in ["public_dns_name", "state"]:
+            data[k] = getattr(m, k)
+        for k in ["plugins"]:
+            data[k] = getattr(mcserver, k)
+        for k, v in data.items():
+            print "{0}: {1}".format(k, v)
