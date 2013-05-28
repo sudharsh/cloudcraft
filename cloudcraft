@@ -66,7 +66,7 @@ def despatch(options, args):
     cloudcraft_home = options.cloudcraft_home
 
     command = args[0]
-    mcserver_name = args[1] if len(args) == 2 else ""
+    mcserver_name = args[1]
     command_args = args[2:]
 
     token = conf.get("amazon", "AWS_ACCESS_TOKEN")
@@ -111,10 +111,10 @@ def despatch(options, args):
             os.remove(metadata_path)
 
     elif command == "list":
-        if mcserver_name in ["instances", "keys"]:
-            print "\n".join(os.listdir(os.path.join(metadata_path)))
+        if args[1] in ["instances", "keys"]:
+            print "\n".join(os.listdir(os.path.join(cloudcraft_home, args[1])))
         else:
-            log.error("list needs 'instances' or 'keys'. Invalid parameter {0}".format(mcserver_name))
+            parser.error("list needs 'instances' or 'keys'. Invalid parameter {0}".format(mcserver_name))
             return False
     else:
         if not mcs:
@@ -166,6 +166,9 @@ if __name__ == '__main__':
     get_logger(options.log)
 
     initialize(options.cloudcraft_home, options.config)
+
+    if len(args) < 2:
+        parser.error("Missing parameter")
 
     if not despatch(options, args):
         parser.print_usage()
