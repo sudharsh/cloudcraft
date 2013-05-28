@@ -115,7 +115,8 @@ def despatch(options, args):
         ec2_instance = aws_api.get_instance(mcs.server_id)
         remote_vars = dict(conf.items("minecraft"))
         if ec2_instance.state != "running":
-            log.error("Instance {0} is not running".format(mcs.name))
+            log.error("Instance {0} is not running. If you had run 'boot' recently, give it a couple of minutes for {0} to boot up.".format(mcs.name))
+            exit(-1)
         key_file = os.path.join(key_path, "{0}.pem".format(key_name))
         if command == "setup":
             command = ["bootstrap", "fetch", "start"]
