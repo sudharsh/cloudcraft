@@ -7,12 +7,8 @@ import subprocess
 import os
 import errno
 import json
-import fabric.context_managers as ctxt
 
 import craft
-
-from fabric.colors import green, red
-from fabric.tasks import execute
 
 log = logging.getLogger("cloudcraft")
 
@@ -58,6 +54,10 @@ def despatch(options, args):
     instance_type = conf.get("amazon", "INSTANCE_TYPE")
     security_group = conf.get("amazon", "SECURITY_GROUP", "cloudcraft")
     ami = conf.get("amazon", "AMI")
+    user = "ubuntu"
+
+    key_name = "{0}-cloudcraft".format(region)
+    key_path = os.path.join(cloudcraft_home, "keys")
 
     aws_api = craft.aws.AWS(token, secret, region=region)
     command = args[0]
@@ -72,12 +72,11 @@ def despatch(options, args):
             log.error("{0} already exists.".format(mcserver_name))
             exit(-1)
         else:
-            key_name = "{0}-cloudcraft".format(region)
-            key_path = os.path.join(cloudcraft_home, "keys")
             key = aws_api.sync_keypair(key_name, key_path)
             aws_api.sync_security_group(security_group)
             mcs = aws_api.spawn(mcserver_name, ami=ami, instance_type=instance_type,
-                                key_name=key_name, security_group=security_group)
+                                key_name=key_name, security_group=security_group,
+                                user=user)
             if mcs:
                 log.info("Instance {0} is up and running.".format(mcs.name))
                 craft.mcserver.save_server(mcs, metadata_path)
@@ -93,85 +92,20 @@ def despatch(options, args):
             log.debug("Deleting instance metadata")
             os.remove(metadata_path)
 
-    return True
-
-    """
-    # FIXME:
-    # only list doesn't require the second 'arg'. Everyone else needs the
-    # instance name as one of the args. Maybe this can be done in a much
-    # cleaner manner
-    if len(args) < 2 and args[0] != "list":
-        return False
-    instance_file = None
-    instance_name = "" if len(args) == 1 else args[1]
-    instance = {}
-    try:
-        if instance_name:
-            instance_file = os.path.join(options.cloudcraft_home, "instances", instance_name)
-            instance = json.load(open(instance_file))
-    except IOError:
-        pass
-
-    if args[0] == "spawn":
-        if instance:
-            log.error("{0} already exists".format(instance_name))
-            exit(-1)
-        instance = craft.aws.provision(options.cloudcraft_home, instance_name,
-                                       **dict(conf.items("amazon")))
-        if not instance:
-            log.error("Spawning failed!")
-        else:
-            json.dump(instance, open(instance_file, "w"), indent=True)
-            log.info("Instance {0} is up and running. Run 'setup' to start the minecraft server".format(instance_name))
-    elif args[0] == "destroy":
-        if not instance:
-            log.error("Instance {0} doesn't exist".format(instance_name))
-            exit(-1)
-        stat = craft.aws.destroy(instance, aws_access_token=token,
-                                 aws_access_secret=secret, ec2_region=region)
-        if stat:
-            log.debug("Deleting instance metadata")
-            os.remove(instance_file)
-    elif args[0] == "list":
-        if instance_name and not instance:
-            parser.error("Instance {0} doesn't exist".format(instance_name))
-        elif instance: # Not my proudest piece of code
-            print "\n".join(["{0}: {1}".format(k,v) for k,v in instance.items()])
-        else:
-            print "\n".join(os.listdir(os.path.join(options.cloudcraft_home,
-                                                    "instances")))
     else:
-        if not instance:
+        if not mcs:
             parser.error("Invalid instance")
-
-        command = args[0]
-        commands = ["bootstrap", "fetch", "start"] if command == "setup" else [command]
-        sh_args = args[1:] if len(args) >= 2 else []
-        keyname = instance["keyname"]
-        keyfile = os.path.join(options.cloudcraft_home, "keys", "{0}.pem".format(keyname))
-        user = conf.get("ami_users", instance["image_id"])
+        ec2_instance = aws_api.get_instance(mcs.server_id)
         remote_vars = dict(conf.items("minecraft"))
-
-        with ctxt.settings(
-            host_string="%s@%s" %(user, instance["public_dns_name"]),
-            key_filename=keyfile,
-            output_prefix=False,
-            prefix=""):
-            with ctxt.hide("running", "aborts"):
-                for cmd in commands:
-                    # Because this is ami specific instead of instance specific
-                    if cmd == "bootstrap":
-                        res = execute(craft.commander.bootstrap_server, instance["image_id"])
-                    elif cmd in ["sh", "shell"]:
-                        print(green("Logging in as '%s'" % user))
-                        subprocess.call(["ssh", "-i", keyfile, "%s@%s" % (user, instance["public_dns_name"])])
-                    else:
-                        print(green("Running '{0}' for '{1}'".format(cmd, instance_name)))
-
-                        res = execute(craft.commander.run_remote, cmd, command_args=sh_args,
-                                      remote_vars=remote_vars)
+        if ec2_instance.state != "running":
+            log.error("Instance {0} is not running".format(mcs.name))
+        key_file = os.path.join(key_path, "{0}.pem".format(key_name))
+        if command == "setup":
+            command = ["bootstrap", "fetch", "start"]
+        mcs.run_command(ec2_instance.public_dns_name,
+                        command, key_file, remote_vars=remote_vars,
+                        command_args=command_args)
     return True
-    """
 
 
 def get_arg_parser():
