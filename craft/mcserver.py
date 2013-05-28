@@ -1,6 +1,10 @@
 import json
 import os
 
+import fabric.context_managers as ctxt
+from fabric.colors import green, red
+from fabric.tasks import execute
+
 import commander
 
 
@@ -36,6 +40,37 @@ class MinecraftServer(object):
 
     def __repr__(self):
         return json.dumps(self.__dict__, indent=True)
+
+
+    def run_command(self, host,
+                    command, key_file, command_args=[],
+                    remote_vars={}):
+        host_string = "{0}@{1}".format(self.user, host)
+        commands = [command] if isinstance(command, basestring) else command
+        with ctxt.settings(
+            host_string=host_string,
+            key_filename=key_file,
+            output_prefix=False):
+            with ctxt.hide("running", "aborts"):
+                for cmd in commands:
+                    if cmd in ["sh", "shell"]:
+                        print(green("Logging in as '%s'" % user))
+                        subprocess.call(["ssh", "-i", key_file, "%s@%s" % host_string])
+                    else:
+                        print(green("----- Running '{0}' on '{1}' -----".format(cmd, self.name)))
+
+                        res = execute(commander.run_remote, cmd, command_args=command_args,
+                                      remote_vars=remote_vars)
+                        print(green("----- Done '{0}' on '{1}' -----".format(cmd, self.name)))
+        return True
+
+
+                    
+                
+        
+        
+        
+    
 
 
     
