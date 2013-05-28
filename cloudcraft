@@ -49,6 +49,53 @@ def despatch(options, args):
     """Despatches commands."""
     conf = ConfigParser()
     conf.read(options.config)
+
+    cloudcraft_home = options.cloudcraft_home
+
+    token = conf.get("amazon", "AWS_ACCESS_TOKEN")
+    secret = conf.get("amazon", "AWS_ACCESS_SECRET")
+    region = conf.get("amazon", "EC2_REGION")
+    instance_type = conf.get("amazon", "INSTANCE_TYPE")
+    security_group = conf.get("amazon", "SECURITY_GROUP", "cloudcraft")
+    ami = conf.get("amazon", "AMI")
+
+    aws_api = craft.aws.AWS(token, secret, region=region)
+    command = args[0]
+    mcserver_name = args[1]
+    command_args = args[2:]
+
+    metadata_path = os.path.join(cloudcraft_home, "instances", mcserver_name)
+    mcs = craft.mcserver.load_server(metadata_path)
+
+    if command == "spawn":
+        if mcs:
+            log.error("{0} already exists.".format(mcserver_name))
+            exit(-1)
+        else:
+            key_name = "{0}-cloudcraft".format(region)
+            key_path = os.path.join(cloudcraft_home, "keys")
+            key = aws_api.sync_keypair(key_name, key_path)
+            aws_api.sync_security_group(security_group)
+            mcs = aws_api.spawn(mcserver_name, ami=ami, instance_type=instance_type,
+                                key_name=key_name, security_group=security_group)
+            if mcs:
+                log.info("Instance {0} is up and running.".format(mcs.name))
+                craft.mcserver.save_server(mcs, metadata_path)
+            else:
+                log.error("Couldn't spawn instance {0}".format(mcs.name))
+                exit(-1)
+    elif command in ["destroy", "reboot", "boot", "shutdown"]:
+        if not mcs:
+            log.error("Instance {0} doesn't exist".format(mcserver_name))
+            exit(-1)
+        getattr(aws_api, command)(mcs)
+        if command == "destroy":
+            log.debug("Deleting instance metadata")
+            os.remove(metadata_path)
+
+    return True
+
+    """
     # FIXME:
     # only list doesn't require the second 'arg'. Everyone else needs the
     # instance name as one of the args. Maybe this can be done in a much
@@ -80,9 +127,6 @@ def despatch(options, args):
         if not instance:
             log.error("Instance {0} doesn't exist".format(instance_name))
             exit(-1)
-        token = conf.get("amazon", "AWS_ACCESS_TOKEN")
-        secret = conf.get("amazon", "AWS_ACCESS_SECRET")
-        region = conf.get("amazon", "EC2_REGION")
         stat = craft.aws.destroy(instance, aws_access_token=token,
                                  aws_access_secret=secret, ec2_region=region)
         if stat:
@@ -127,6 +171,7 @@ def despatch(options, args):
                         res = execute(craft.commander.run_remote, cmd, command_args=sh_args,
                                       remote_vars=remote_vars)
     return True
+    """
 
 
 def get_arg_parser():
