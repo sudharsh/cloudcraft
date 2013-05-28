@@ -6,8 +6,8 @@ then
     echo "Saving map..."
     mc_command save-all
     sleep 10
-    echo "Stopping server..."
+    echo "Stopping minecraft server..."
     mc_command stop
 else
-    echo "Server already stopped"
+    echo "Minecraft server already stopped"
 fi
