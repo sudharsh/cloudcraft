@@ -59,7 +59,30 @@ def initialize(cloudcraft_home, config):
 
 # FIXME: Heavy refactor needed
 def despatch(options, args):
-    """Despatches commands."""
+    # Generate this usage information dynamically once we move on to a more
+    # functional way of despatching commands
+    """
+Quickstart:
+  spawn SERVER - Spawns an instance on the cloud and writes metadata to CLOUDCRAFT_HOME/instances/SERVER
+  setup SERVER - Bootstraps, fetches and starts the minecraft server in SERVER
+
+Minecraft server commands:
+  start SERVER
+  stop SERVER
+  save SERVER
+  logs SERVER - Print the minecraft server logs
+
+Machine commands:
+  shutdown SERVER
+  reboot SERVER
+  boot SERVER
+  destroy SERVER - Terminates the EC2 instance
+  info SERVER    - Dumps the current machine and minecraft installation status
+
+Others:
+  bootstrap SERVER - Bootstraps the SERVER for use (e.g, installation of Java)
+  list keys|instances - Lists the keys and the instances.
+      """
     conf = ConfigParser()
     conf.read(options.config)
 
@@ -134,7 +157,7 @@ def despatch(options, args):
 
 
 def get_arg_parser():
-    usage = "usage: %prog [options] command instance | list [instances|keys]"
+    usage = "usage: %prog [options] command params\n" + despatch.__doc__
     cloudcraft_home = os.path.join(os.path.expanduser("~"), ".cloudcraft")
     if os.environ.get("CLOUDCRAFT_HOME"):
         cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
