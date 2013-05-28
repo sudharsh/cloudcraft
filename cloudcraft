@@ -29,15 +29,32 @@ def initialize(cloudcraft_home, config):
     mkdir_p(os.path.join(cloudcraft_home, "keys"))
     config_template = "etc/config.template"
     if not os.path.exists(config):
-        print "{0} not found.".format(config)
+        log.warning("{0} not found.".format(config))
+        print
         print "Initalizing cloudcraft configuration at {0}".format(config)
-        token = raw_input("AWS access key: ")
-        secret = raw_input("AWS access secret: ")
+        print "Cloudcraft needs your AWS keys to run"
+        print "This can be accessed from https://portal.aws.amazon.com/gp/aws/securityCredentials#access_credentials"
+        token, secret = "", ""
+        try:
+            while (token.strip() == ""):
+                token = raw_input("AWS access key: ")
+            while (secret.strip() == ""):
+                secret = raw_input("AWS access secret: ")
+            print
+            print "Validating the AWS keys"
+            api = craft.aws.AWS(token, secret)
+            api.conn.get_all_instances()
+        except EOFError, KeyboardInterrupt:
+            print "Bye!"
+        except:
+            log.error("API Key validation failed! Config file was not written.")
+            exit(-1)
         f = open(config_template).read()
         with open(config, "w") as c:
             c.write(f.format(token=token, secret=secret))
-        print "Wrote config {0}. Run the same command once again to continue.".format(config)
+        print "Wrote config at {0}. Run the same command once again to continue.".format(config)
         exit(0)
+
 
 
 # FIXME: Heavy refactor needed
@@ -56,7 +73,7 @@ def despatch(options, args):
     ami = conf.get("amazon", "AMI")
     user = "ubuntu"
 
-    key_name = "{0}-cloudcraft".format(region)
+    key_name = "cloudcraft-{0}".format(region)
     key_path = os.path.join(cloudcraft_home, "keys")
 
     aws_api = craft.aws.AWS(token, secret, region=region)

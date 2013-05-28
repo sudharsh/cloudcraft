@@ -12,6 +12,7 @@ AWS_ACCESS_SECRET={secret}
 EC2_REGION=us-west-2
 AMI=ami-bf1d8a8f
 INSTANCE_TYPE=t1.micro
+SECURITY_GROUP=cloudcraft
 
 [ami_users]
 ami-bf1d8a8f=ubuntu
