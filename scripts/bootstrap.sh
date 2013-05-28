@@ -8,4 +8,3 @@ echo "Done installing Java version 7"
 
 echo "Creating directory for minecraft"
 mkdir -p ~/minecraft
-
