@@ -57,6 +57,7 @@ def initialize(cloudcraft_home):
         with open(config, "w") as c:
             c.write(f.format(token=token, secret=secret))
         print "Wrote config at {0}. Run the same command once again to continue.".format(config)
+        print "Tweak the AMI and the EC2 region in {0} according to your requirements."
         exit(0)
     return config
 
@@ -115,6 +116,12 @@ Others:
             log.error("{0} already exists.".format(mcserver_name))
             exit(-1)
         else:
+            log.info("Spawning a '{0}' '{1}' instance in region '{2}'".format(ami, instance_type, region))
+            log.info("You can change these settings in '{0}'".format(config))
+            print
+            i = raw_input("Continue? (y/n) [n]: ").lower()
+            if not i or (i == "n") or (i != "y"):
+                return True
             key = aws_api.sync_keypair(key_name, key_path)
             aws_api.sync_security_group(security_group)
             mcs = aws_api.spawn(mcserver_name, ami=ami, instance_type=instance_type,
@@ -132,6 +139,12 @@ Others:
             exit(-1)
         getattr(aws_api, command)(mcs)
         if command == "destroy":
+            log.info("'{0}' will be lost for ever".format(mcs.name))
+            print
+            i = raw_input("Are you sure? (y/n) [n]: ").lower()
+            if not i or (i == "n") or (i != "y"):
+                log.info("Not destroying '{0}'".format(mcs.name))
+                return True
             log.debug("Deleting instance metadata")
             os.remove(metadata_path)
 
