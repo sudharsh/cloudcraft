@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name="cloudcraft",
+setup(name="Cloudcraft",
       license="BSD",
       version="0.1",
       description="Easy minecraft and bukkit server management",
