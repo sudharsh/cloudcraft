@@ -28,7 +28,7 @@ def run_remote(command, command_args=[], remote_vars={}):
             put(SCRIPTS_PATH + "lib.sh", REMOTE_PATH + "lib.sh")
         put(prepared_buffer, remote_path)
         with cd(REMOTE_PATH):
-            return run("bash ./{0}.sh {1}".format(command, command_args), pty=False, combine_stderr=False)
+            return run("bash ./{0}.sh {1}".format(command, " ".join(command_args)), pty=False, combine_stderr=False)
     except ValueError, IOError:
         print(traceback.format_exc())
         log.error(red("Couldn't connect to the instance"))
