@@ -1,3 +1,7 @@
+# Cloudcraft
+# Copyright 2013, Sudharshan S
+# See COPYING for more.
+
 import logging
 import time
 import os

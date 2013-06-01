@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+# Cloudcraft
+# Copyright 2013, Sudharshan S
+# See COPYING for more.
+
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -93,7 +98,7 @@ Machine commands:
 Others:
   bootstrap SERVER - Bootstraps the SERVER for use (e.g, installation of Java)
   list keys|instances - Lists the keys and the instances.
-      """
+    """
     token = conf.get("amazon", "AWS_ACCESS_TOKEN")
     secret = conf.get("amazon", "AWS_ACCESS_SECRET")
     region = conf.get("amazon", "EC2_REGION")
