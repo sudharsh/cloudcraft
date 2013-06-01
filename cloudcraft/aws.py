@@ -100,7 +100,8 @@ class AWS(object):
         m = self.get_instance(mcserver.server_id)
         if m:
             log.info("Terminating instance %s", m.id)
-            return m.terminate()
+            m.terminate()
+            return True
         return False
 
 
@@ -108,7 +109,8 @@ class AWS(object):
         m = self.get_instance(mcserver.server_id)
         if m:
             log.info("Stopping instance %s", m.id)
-            return m.stop()
+            m.stop()
+            return True
         return False
 
 
@@ -116,7 +118,8 @@ class AWS(object):
         m = self.get_instance(mcserver.server_id)
         if m:
             log.info("Booting up instance %s", m.id)
-            return m.start()
+            m.start()
+            return True
         return False
 
 
@@ -124,7 +127,8 @@ class AWS(object):
         m = self.get_instance(mcserver.server_id)
         if m:
             log.info("Rebooting instance %s", m.id)
-            return m.reboot()
+            m.reboot()
+            return True
         return False
 
 
