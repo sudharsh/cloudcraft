@@ -42,9 +42,11 @@ class AWS(object):
             key.save(path)
         except:
             if not os.path.exists(key_path):
-                log.error("AWS Key {0}.pem already generated but couldn't find it in {1}".format(key_name, path))
-                log.error("This usually means that the keyfile was deleted locally.")
-                log.error("Generate the keypair manually and place {0}.pem in {1}".format(key_name, path))
+                log.error("AWS Key {0}.pem was already generated but cloudcraft couldn't find the private key in {1}".format(key_name, path))
+                log.error("You have the following choices")
+                log.error("1.) Copy '{0}.pem' to '{1}' if you have the keyfile somewhere".format(key_name, path))
+                log.error("2.) If you have lost '{0}.pem', delete '{0}' from your AWS Keypairs management console. Cloudcraft will sync the private key on the next run".format(key_name))
+                log.error("3.) Give your own keyfile in the cloudcraft config. You must copy the corresponding private key in {0}.".format(path))
                 return None
             else:
                 log.debug("Found {0}.pem. Keys are in sync".format(key_name))

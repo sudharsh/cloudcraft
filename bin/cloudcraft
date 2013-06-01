@@ -122,6 +122,8 @@ Others:
             if not i or (i == "n") or (i != "y"):
                 return True
             key = aws_api.sync_keypair(key_name, key_path)
+            if not key:
+                return True
             aws_api.sync_security_group(security_group)
             mcs = aws_api.spawn(mcserver_name, ami=ami, instance_type=instance_type,
                                 key_name=key_name, security_group=security_group,
