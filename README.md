@@ -11,6 +11,8 @@ Installation
 
 `$ pip install cloudcraft`
 
+If using Ubuntu, run `sudo apt-get install python-dev` before installing cloudcraft.
+
 
 Quickstart
 -
