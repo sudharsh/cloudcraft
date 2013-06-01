@@ -66,11 +66,11 @@ For more commands, `cloudcraft -h`
     list keys|instances - Lists the keys and the instances.
 
 
-TODO
+TODO for 0.2
 -
 
-- Implement EC2 scaling to save costs
-- plugin management
+- Store metadata on cloud as well
+- Improved plugin management
 - Manage multiple instances of minecraft_server.jar
 - More documentation
 - Test cases
