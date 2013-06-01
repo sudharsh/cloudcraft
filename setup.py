@@ -21,7 +21,10 @@ setup(name="Cloudcraft",
         'License :: OSI Approved :: BSD License',
         'Topic :: Utilities'
         ],
-      
+
+      install_requires=["Fabric==1.6.1",
+                        "boto==2.9.4",
+                        "paramiko==1.10.1"]
       requires=["Fabric (==1.6.1)",
                 "boto (==2.9.4)",
                 "paramiko (==1.10.1)"]
