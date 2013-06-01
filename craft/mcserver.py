@@ -1,3 +1,4 @@
+import subprocess
 import json
 import os
 
@@ -54,8 +55,8 @@ class MinecraftServer(object):
             with ctxt.hide("running", "aborts"):
                 for cmd in commands:
                     if cmd in ["sh", "shell"]:
-                        print(green("Logging in as '%s'" % user))
-                        subprocess.call(["ssh", "-i", key_file, "%s@%s" % host_string])
+                        print(green("Logging in as '%s'" % self.user))
+                        subprocess.call(["ssh", "-i", key_file, "%s" % (host_string)])
                     else:
                         print(green("----- Running '{0}' on '{1}' -----".format(cmd, self.name)))
 
