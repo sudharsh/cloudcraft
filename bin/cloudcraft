@@ -75,7 +75,13 @@ Minecraft server commands:
   start SERVER
   stop SERVER
   save SERVER
-  logs SERVER - Print the minecraft server logs
+  logs SERVER    - Print the minecraft server logs
+  cleanup SERVER - Stop the server and remove the minecraft directory
+
+Bukkit plugin management:
+  plugin SERVER install URL      - Installs plugin at URL
+  plugin SERVER uninstall PLUGIN - <Not Implemented yet>
+  plugin SERVER update URL       - Update plugin from URL
 
 Machine commands:
   shutdown SERVER
