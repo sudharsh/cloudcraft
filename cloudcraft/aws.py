@@ -30,7 +30,7 @@ class AWS(object):
         for m in machines:
             if m.id == instance_id:
                 return m
-        return m
+        return None
 
 
     def sync_keypair(self, key_name, path):
@@ -94,30 +94,40 @@ class AWS(object):
 
     def destroy(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.info("Terminating instance %s", m.id)
-        return m.terminate()
+        if m:
+            log.info("Terminating instance %s", m.id)
+            return m.terminate()
+        return False
 
 
     def shutdown(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.info("Stopping instance %s", m.id)
-        return m.stop()
+        if m:
+            log.info("Stopping instance %s", m.id)
+            return m.stop()
+        return False
 
 
     def boot(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.info("Booting up instance %s", m.id)
-        return m.start()
+        if m:
+            log.info("Booting up instance %s", m.id)
+            return m.start()
+        return False
 
 
     def reboot(self, mcserver):
         m = self.get_instance(mcserver.server_id)
-        log.info("Rebooting instance %s", m.id)
-        return m.reboot()
+        if m:
+            log.info("Rebooting instance %s", m.id)
+            return m.reboot()
+        return False
 
 
     def info(self, mcserver):
         m = self.get_instance(mcserver.server_id)
+        if not m:
+            return False
         print "----- Machine Status for {0} -----".format(mcserver.name)
         data = {}
         for k in ["public_dns_name", "state"]:
@@ -126,3 +136,4 @@ class AWS(object):
             data[k] = getattr(mcserver, k)
         for k, v in data.items():
             print "{0}: {1}".format(k, v)
+        return True
