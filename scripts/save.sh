@@ -1,5 +1,5 @@
 source ./lib.sh
-if pgrep -f "minecraft_server" > /dev/null
+if pgrep -f "server" > /dev/null
 then
     echo "Saving map..."
     mc_command say "Saving map..."

@@ -1,5 +1,5 @@
 source ./lib.sh
-if pgrep -f "minecraft_server" > /dev/null
+if pgrep -f "server" > /dev/null
 then
     echo "Warning miners..."
     mc_command say "WARNING: shutting down in 10 seconds"
