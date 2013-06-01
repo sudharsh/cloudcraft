@@ -1,3 +1,5 @@
+import sys
+
 from fabric.api import local, run, cd, put
 from fabric.colors import green, red
 
@@ -7,8 +9,7 @@ import StringIO
 import traceback
 
 REMOTE_PATH = "~/.cloudcraft/"
-BOOTSTRAP_PATH = "bootstrap/"
-SCRIPTS_PATH = "scripts/"
+SCRIPTS_PATH = os.path.join(os.path.dirname(__file__), "scripts")
 
 log = logging.getLogger("cloudcraft")
 

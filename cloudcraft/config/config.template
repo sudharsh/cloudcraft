@@ -1,5 +1,6 @@
 [minecraft]
-JAR=https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft_server.jar
+#JAR=https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft_server.jar
+JAR=http://dl.bukkit.org/downloads/craftbukkit/get/02110_1.5.2-R0.1/craftbukkit-beta.jar
 ms=512m
 mx=1G
 mc_home=/home/ubuntu/minecraft

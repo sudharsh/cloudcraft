@@ -8,7 +8,8 @@ import os
 import errno
 import json
 
-import craft
+import cloudcraft
+lib_path = os.path.dirname(cloudcraft.__file__)
 
 log = logging.getLogger("cloudcraft")
 
@@ -22,12 +23,15 @@ def mkdir_p(path):
         else: raise
 
 
-def initialize(cloudcraft_home, config):
+def initialize(cloudcraft_home):
     # Error out if we find a file of the same name?
     mkdir_p(cloudcraft_home)
     mkdir_p(os.path.join(cloudcraft_home, "instances"))
     mkdir_p(os.path.join(cloudcraft_home, "keys"))
-    config_template = "etc/config.template"
+    config_template = os.path.join(lib_path, "config", "config.template")
+
+    config = os.path.join(cloudcraft_home, "cloudcraft.conf")
+    log.debug("Checking if {0} exists".format(config))
     if not os.path.exists(config):
         log.warning("{0} not found.".format(config))
         print
@@ -42,7 +46,7 @@ def initialize(cloudcraft_home, config):
                 secret = raw_input("AWS access secret: ")
             print
             print "Validating the AWS keys"
-            api = craft.aws.AWS(token, secret)
+            api = cloudcraft.aws.AWS(token, secret)
             api.conn.get_all_instances()
         except EOFError, KeyboardInterrupt:
             print "Bye!"
@@ -54,11 +58,12 @@ def initialize(cloudcraft_home, config):
             c.write(f.format(token=token, secret=secret))
         print "Wrote config at {0}. Run the same command once again to continue.".format(config)
         exit(0)
+    return config
 
 
 
 # FIXME: Heavy refactor needed
-def despatch(options, args):
+def despatch(conf, mcserver_name, command, cloudcraft_home, command_args=[]):
     # Generate this usage information dynamically once we move on to a more
     # functional way of despatching commands
     """
@@ -83,15 +88,6 @@ Others:
   bootstrap SERVER - Bootstraps the SERVER for use (e.g, installation of Java)
   list keys|instances - Lists the keys and the instances.
       """
-    conf = ConfigParser()
-    conf.read(options.config)
-
-    cloudcraft_home = options.cloudcraft_home
-
-    command = args[0]
-    mcserver_name = args[1]
-    command_args = args[2:]
-
     token = conf.get("amazon", "AWS_ACCESS_TOKEN")
     secret = conf.get("amazon", "AWS_ACCESS_SECRET")
     region = conf.get("amazon", "EC2_REGION")
@@ -103,10 +99,10 @@ Others:
     key_name = "cloudcraft-{0}".format(region)
     key_path = os.path.join(cloudcraft_home, "keys")
 
-    aws_api = craft.aws.AWS(token, secret, region=region)
+    aws_api = cloudcraft.aws.AWS(token, secret, region=region)
 
     metadata_path = os.path.join(cloudcraft_home, "instances", mcserver_name)
-    mcs = craft.mcserver.load_server(metadata_path)
+    mcs = cloudcraft.mcserver.load_server(metadata_path)
 
     if command == "spawn":
         if mcs:
@@ -120,7 +116,7 @@ Others:
                                 user=user)
             if mcs:
                 log.info("Instance {0} is up and running.".format(mcs.name))
-                craft.mcserver.save_server(mcs, metadata_path)
+                cloudcraft.mcserver.save_server(mcs, metadata_path)
             else:
                 log.error("Couldn't spawn instance {0}".format(mcs.name))
                 exit(-1)
@@ -162,13 +158,10 @@ def get_arg_parser():
     if os.environ.get("CLOUDCRAFT_HOME"):
         cloudcraft_home = os.environ["CLOUDCRAFT_HOME"]
     log.debug("Setting CLOUDCRAFT_HOME to {0}".format(cloudcraft_home))
-    cloudcraft_config = os.path.join(cloudcraft_home, "cloudcraft.conf")
 
     parser = OptionParser(usage=usage)
     parser.add_option("-H", "--home", dest="cloudcraft_home", default=cloudcraft_home,
-                      help="cloudcraft config file")
-    parser.add_option("-c", "--config", dest="config", default=cloudcraft_config,
-                      help="cloudcraft config file", metavar="FILE")
+                      help="Cloudcraft home")
     parser.add_option("-l", "--log", dest="log", default="INFO",
                       help="Log level. Use DEBUG for verbose output")
     return parser
@@ -187,11 +180,21 @@ if __name__ == '__main__':
     parser = get_arg_parser()
     (options, args) = parser.parse_args()
     get_logger(options.log)
-
-    initialize(options.cloudcraft_home, options.config)
+    
+    config = initialize(options.cloudcraft_home)
 
     if len(args) < 2:
         parser.error("Missing parameter")
 
-    if not despatch(options, args):
-        parser.print_usage()
+    if config:
+        conf = ConfigParser()
+        conf.read(config)
+        command = args[0]
+        mcserver_name = args[1]
+        command_args = args[2:]
+        if not despatch(conf, mcserver_name, command, options.cloudcraft_home,
+                        command_args=command_args):
+            parser.print_usage()
+    else:
+        log.error("Config file missing")
+        exit(-1)
