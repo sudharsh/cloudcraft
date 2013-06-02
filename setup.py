@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(name="Cloudcraft",
       license="BSD",
-      version="0.1.2",
+      version="0.1.3",
       description="Easy minecraft and bukkit server management",
       long_description="Cloudcraft is a toolbelt to manage bukkit servers easily on the cloud",
       author="Sudharshan S",

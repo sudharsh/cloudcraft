@@ -33,6 +33,7 @@ def initialize(cloudcraft_home):
     mkdir_p(cloudcraft_home)
     mkdir_p(os.path.join(cloudcraft_home, "instances"))
     mkdir_p(os.path.join(cloudcraft_home, "keys"))
+    mkdir_p(os.path.join(cloudcraft_home, "archives"))
     config_template = os.path.join(lib_path, "config", "config.template")
 
     config = os.path.join(cloudcraft_home, "cloudcraft.conf")
@@ -169,6 +170,7 @@ Others:
             parser.error("Invalid instance")
         ec2_instance = aws_api.get_instance(mcs.server_id)
         remote_vars = dict(conf.items("minecraft"))
+        remote_vars["server_name"] = mcs.name
         if ec2_instance.state != "running":
             log.error("Instance {0} is not running. If you had run 'boot' recently, give it a couple of minutes for {0} to boot up.".format(mcs.name))
             exit(-1)
