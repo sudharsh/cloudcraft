@@ -56,6 +56,7 @@ def initialize(cloudcraft_home):
             api.conn.get_all_instances()
         except EOFError, KeyboardInterrupt:
             print "Bye!"
+            exit(-1)
         except:
             log.error("API Key validation failed! Config file was not written.")
             exit(-1)
