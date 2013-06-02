@@ -16,7 +16,7 @@ function mc_save
     then
         echo "Saving map"
         echo "Going read-only..."
-        mc_command "Saving map..."
+        mc_command say "Saving map..."
         mc_command save-off
         mc_command save-all
         sync
